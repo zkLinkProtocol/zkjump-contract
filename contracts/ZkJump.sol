@@ -27,7 +27,7 @@ contract ZkJump is ReentrancyGuard, AccessControlDefaultAdminRules {
 
     bytes32 public constant BROKER_ROLE = keccak256("BROKER");
 
-    IZkLink zkLinkInstance;
+    IZkLink public zkLinkInstance;
 
     constructor(
         IZkLink _zkLinkInstance
