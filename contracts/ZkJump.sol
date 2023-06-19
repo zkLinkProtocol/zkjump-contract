@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControlDefaultAdminRules.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "zklink-contracts-interface/contracts/IZkLink.sol";
 
 /// @title zkJump contract
@@ -20,6 +21,7 @@ contract ZkJump is ReentrancyGuard, AccessControlDefaultAdminRules {
         bytes32 userAddress,
         uint8 chainId,
         uint128 amount,
+        uint128 fee,
         address token
     );
 
@@ -83,12 +85,14 @@ contract ZkJump is ReentrancyGuard, AccessControlDefaultAdminRules {
         address brokerAddress = ecrecover(prefixedHash, v, r, s);
         _checkRole(BROKER_ROLE, brokerAddress);
 
+        uint128 bridgeAmount = SafeCast.toUint128(msg.value) - fee;
         zkLinkInstance.depositETH(userAddress, subAccountId);
         emit BridgeEvent(
             brokerAddress,
             userAddress,
             chainId,
-            toUint128(msg.value),
+            bridgeAmount,
+            fee,
             ETH_ADDRESS
         );
     }
@@ -143,9 +147,10 @@ contract ZkJump is ReentrancyGuard, AccessControlDefaultAdminRules {
         address brokerAddress = ecrecover(prefixedHash, v, r, s);
         _checkRole(BROKER_ROLE, brokerAddress);
 
+        uint104 bridgeAmount = amount - fee;
         zkLinkInstance.depositERC20(
             token,
-            amount,
+            bridgeAmount,
             userAddress,
             subAccountId,
             ismapping
@@ -155,24 +160,9 @@ contract ZkJump is ReentrancyGuard, AccessControlDefaultAdminRules {
             brokerAddress,
             userAddress,
             chainId,
-            amount,
+            bridgeAmount,
+            fee,
             address(token)
         );
-    }
-
-    /**
-     * @dev Returns the downcasted uint128 from uint256, reverting on
-     * overflow (when the input is greater than largest uint128).
-     *
-     * Counterpart to Solidity's `uint128` operator.
-     *
-     * Requirements:
-     *
-     * - input must fit into 128 bits
-     * copy from zklink-contracts
-     */
-    function toUint128(uint256 value) internal pure returns (uint128) {
-        require(value < 2 ** 128, "16");
-        return uint128(value);
     }
 }
