@@ -78,6 +78,7 @@ contract ZkJump is ReentrancyGuard, AccessControlDefaultAdminRules {
                 "\x19Ethereum Signed Message:\n32",
                 maxAmount,
                 fee,
+                ETH_ADDRESS,
                 deadlineTime,
                 chainId
             )
