@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControlDefaultAdminRules.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "zklink-contracts-interface/contracts/IZkLink.sol";
 
 import "./Events.sol";
@@ -15,13 +16,24 @@ abstract contract AbstractZkJump is
     AccessControlDefaultAdminRules,
     Config,
     ERC20,
-    Events
+    Events,
+    EIP712
 {
+    string public constant DOMAIN_NAME = "ZkJump";
+    string public constant DOMAIN_VERSION = "1.0";
+    bytes32 public constant BROKER_SIGN_DATA_TYPE_HASH =
+        keccak256(
+            "BrokerSignData(uint104 maxAmount,uint104 fee,bool isEthFee,address bridgeToken,uint256 deadlineTime,uint8 chainId)"
+        );
+
     uint48 public constant DEFAULT_BROKER_HARVEST_DELAY = 1 days;
     uint48 public brokerWithdrawDelay = DEFAULT_BROKER_HARVEST_DELAY;
     mapping(address => uint48) private brokerDelayMapping;
 
-    constructor() AccessControlDefaultAdminRules(1 days, msg.sender) {}
+    constructor()
+        EIP712(DOMAIN_NAME, DOMAIN_VERSION)
+        AccessControlDefaultAdminRules(1 days, msg.sender)
+    {}
 
     /**
      * @dev Grants the broker role to an account.
@@ -101,28 +113,21 @@ abstract contract AbstractZkJump is
         uint8 chainId,
         bytes memory signature
     ) public view returns (address) {
-        bytes32 prefixedHash = keccak256(
-            abi.encodePacked(
-                "\x19Ethereum Signed Message:\n32",
-                maxAmount,
-                fee,
-                isEthFee,
-                getBridgeToken(),
-                deadlineTime,
-                chainId
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    BROKER_SIGN_DATA_TYPE_HASH,
+                    maxAmount,
+                    fee,
+                    isEthFee,
+                    getBridgeToken(),
+                    deadlineTime,
+                    chainId
+                )
             )
         );
-        require(signature.length == 65, "incorrect signature length");
 
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
-        }
-        address brokerAddress = ecrecover(prefixedHash, v, r, s);
+        address brokerAddress = ECDSA.recover(digest, signature);
         _checkRole(BROKER_ROLE, brokerAddress);
         return brokerAddress;
     }
