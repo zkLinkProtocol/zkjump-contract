@@ -56,6 +56,7 @@ contract ZkJumpERC20 is ReentrancyGuard, AbstractZkJump {
         }
 
         bridgeToken.transferFrom(msg.sender, address(this), amount);
+        bridgeToken.approve(address(zkLinkInstance), amount);
         zkLinkInstance.depositERC20(
             bridgeToken,
             bridgeAmount,
