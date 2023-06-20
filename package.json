@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.2",
-    "zklink-contracts-interface": "^1.0.0"
+    "zklink-contracts-interface": "1.0.2"
   },
   "scripts": {
     "compile": "npx hardhat compile",
