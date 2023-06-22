@@ -23,7 +23,12 @@ contract ZkJumpERC20 is ReentrancyGuard, AbstractZkJump {
         IERC20Metadata _bridgeToken,
         IZkJumpETH _ethFeeManage,
         IZkLink _zkLinkInstance
-    ) ERC20(string(abi.encode("ZkJump-", _bridgeToken.name())), "") {
+    )
+        ERC20(
+            string(abi.encodePacked("ZkJump-", _bridgeToken.name())),
+            string(abi.encodePacked("Jump-", _bridgeToken.symbol()))
+        )
+    {
         bridgeToken = _bridgeToken;
         ethFeeManage = _ethFeeManage;
         zkLinkInstance = _zkLinkInstance;

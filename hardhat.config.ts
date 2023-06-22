@@ -1,5 +1,4 @@
 import "@nomicfoundation/hardhat-toolbox";
-import "tsconfig-paths/register";
 
 import { HardhatUserConfig } from "hardhat/config";
 import env from "./etc/env";
@@ -42,16 +41,6 @@ env.forEach((network) => {
         ],
     };
 });
-
-config.networks[""] = {};
-
-// custom hardhat user config for different net
-if (process.env.NET !== undefined) {
-    const netName = process.env.NET;
-    config.defaultNetwork = netName;
-
-    // const netConfig = require(`./etc/${netName}.json`);
-}
 export default config;
 
 // // import these packages if network is zksync

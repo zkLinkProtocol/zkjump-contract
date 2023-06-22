@@ -19,7 +19,7 @@ contract ZkJumpETH is ReentrancyGuard, AbstractZkJump, IZkJumpETH {
     address internal constant ETH_ADDRESS =
         0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    constructor(IZkLink _zkLinkInstance) ERC20("ZkJump-ETH", "") {
+    constructor(IZkLink _zkLinkInstance) ERC20("ZkJump-ETH", "Jump-ETH") {
         zkLinkInstance = _zkLinkInstance;
     }
 
