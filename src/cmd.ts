@@ -9,6 +9,14 @@ import hre from 'hardhat'
 import type * as ethers from 'ethers'
 
 import __env from '../etc/env'
+import { ENV_INFO_URL, BLOCK_TOKENS, ZKLINK_NETWORK_API } from './constant'
+import {
+  createSupportChainsFile,
+  fetchApi,
+  getRPCClient,
+  handleSupportChainsData,
+  isLpToken,
+} from './utils'
 const env: Record<string, any> = {}
 __env.forEach((item) => {
   env[item.chainId.toString()] = item
@@ -41,9 +49,6 @@ let tokenContractAddressOption = new Option(
   'ERC20 Token Contract Address'
 )
 
-let ENV_INFO_URL = {
-  devnet: 'https://dev-gw-v1.zk.link',
-}
 program
   .command('init')
   .description('')
@@ -121,36 +126,16 @@ async function deployZkJumpERC20(
 }
 
 async function init(envName: string) {
-  let url = ENV_INFO_URL[envName]
-  if (!url) {
-    return Promise.reject(new Error('unknown env name : ' + envName))
-  }
-  const client = new JSONRPCClient((jsonRPCRequest) =>
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(jsonRPCRequest),
-    }).then((response) => {
-      if (response.status === 200) {
-        return response.json().then((jsonRPCResponse) => client.receive(jsonRPCResponse))
-      } else if (jsonRPCRequest.id !== undefined) {
-        return Promise.reject(new Error(response.statusText))
-      }
-    })
-  )
-
-  let result = await client.request('getSupportChains', [])
-  writeFileSync(
-    join(dirname(__dirname), 'etc/env.ts'),
-    format('export default ' + JSON.stringify(result), {
-      semi: false,
-      parser: 'babel',
-    }),
-    {
-      encoding: 'utf8',
-      flag: 'w',
-    }
-  )
+  const client = getRPCClient(envName)
+  /** get support Chains data*/
+  let supportChains = await client.request('getSupportChains', [])
+  /** get support token data*/
+  let supportTokens = await client.request('getSupportTokens', [])
+  /** get chain info*/
+  let staticChainInfo = await fetchApi(ZKLINK_NETWORK_API)
+  /** Integration of supportChains data */
+  supportChains = handleSupportChainsData({ staticChainInfo, supportChains, supportTokens })
+  /** Creating an env file */
+  createSupportChainsFile(supportChains)
+  console.log('Successful initialization.')
 }
