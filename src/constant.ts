@@ -29,3 +29,4 @@ export const BLOCK_TOKENS = [
 ]
 
 export const ZKLINK_NETWORK_API = 'https://static.zk.link/networks/list.json'
+export const BROKER_ADDRESS = '0x524177DB1512a8871eF0c03C4Ed0701e0fdf0901'

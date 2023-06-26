@@ -1,8 +1,10 @@
 import { writeFileSync } from 'node:fs'
 import { JSONRPCClient } from 'json-rpc-2.0'
 import { join, dirname } from 'path'
-import { BLOCK_TOKENS, ENV_INFO_URL } from './constant'
+import { BLOCK_TOKENS, BROKER_ADDRESS, ENV_INFO_URL } from './constant'
 import { format } from 'prettier'
+import AsciiTable from 'ascii-table'
+import { readFileSync } from 'fs'
 
 export const isLpToken = function (tokenId: number) {
   if (tokenId === undefined || tokenId === null || Number.isNaN(Number(tokenId))) {
@@ -80,8 +82,32 @@ export const createSupportChainsFile = (supportChains) => {
   )
 }
 export const fetchApi = async (url) => {
-  await fetch(url).then((res) => {
-    console.log(res)
-    return res.json()
-  })
+  return fetch(url)
+    .then((res) => {
+      return res.json()
+    })
+    .then((res) => {
+      return res
+    })
+}
+
+export const grantBroker = async (contract, signer) => {
+  const res = await contract.grantBroker(BROKER_ADDRESS)
+  var addressTable = new AsciiTable()
+  addressTable.setHeading('Role', 'Address')
+  addressTable.addRow('Submiter', await signer.getAddress())
+  addressTable.addRow('Broker', BROKER_ADDRESS)
+  console.log(addressTable.toString())
+}
+
+export const appendDataToFile = async (chainId, token, contractAddress) => {
+  const contractPath = __dirname + '/../etc/contract.json'
+  const { symbol } = token
+  const fileBuf = readFileSync(contractPath).toString()
+  const fileJson = JSON.parse(fileBuf)
+  if (!fileJson[chainId]) {
+    fileJson[chainId] = {}
+  }
+  fileJson[chainId][symbol] = { pridgeAddress: contractAddress, ...token }
+  writeFileSync(contractPath, JSON.stringify(fileJson))
 }
