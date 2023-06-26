@@ -41,7 +41,7 @@
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
     "cmd": "npx ts-node --files src/cmd.ts",
-    "init": "npx ts-node --files src/cmd.ts init -e devnet",
+    "init": "npx ts-node --files src/cmd-init.ts init -e devnet",
     "depoly-eth": "npx ts-node --files src/cmd.ts deploy -i 1 -c ZkJumpETH"
   }
 }

@@ -32,7 +32,11 @@ program.version('0.0.1')
 let networkIdOption = new Option('-i, --network-id <networkId>', 'Network ID').choices([
   '1',
   '2',
-  '...',
+  '3',
+  '4',
+  '5',
+  '7',
+  '9',
 ])
 networkIdOption.mandatory = true
 
@@ -68,7 +72,9 @@ program
   .addOption(tokenContractAddressOption)
   .addOption(new Option('-g, --gas-token <gasToken>', 'Gas Fee Manage Contract'))
   .action(async (options) => {
+    console.log(options.networkId)
     await hre.run('compile')
+
     let provider = new hre.ethers.JsonRpcProvider(hre.config.networks[options.networkId]['url'])
     const wallet = new hre.ethers.Wallet(
       hre.config.networks[options.networkId].accounts[0],
@@ -88,9 +94,11 @@ program
       // )
       const targetChain = env[options.networkId]
       // console.log(targetChain.tokens[0].address)
+      // console.log(options.tokenContractAddress)
+      // console.log(targetChain.tokens)
       const token = targetChain.tokens.find((item) => item.address === options.tokenContractAddress)
 
-      const { address: tokenContractAddress, symbol } = token
+      // const { address: tokenContractAddress, symbol } = token
       await deployZkJumpERC20(
         options.networkId,
         options.gasToken,
@@ -120,6 +128,8 @@ program.parse()
 
 async function deployZkJumpETH(networkId: string, signer: ethers.Signer, token) {
   let envInstance = env[networkId]
+
+  console.log('#######################' + envInstance.name + '#######################')
   const { tokens } = envInstance
   // console.log('envInstance===>', env)
   // console.log('envInstance==>', envInstance)
@@ -146,25 +156,25 @@ async function deployZkJumpETH(networkId: string, signer: ethers.Signer, token) 
   await appendDataToFile(envInstance.chainId, token, gasFeeManageAddrss)
   await grantBroker(ZkJumpETH, signer)
 
-  let commandStr = ``
-  // shell.exec('cd ../')
-  // console.log(shell.pwd())
-  tokens.forEach((item, index) => {
-    if (!index) {
-      commandStr += ''
-    } else {
-      commandStr += ' && '
-    }
-    commandStr += `npx ts-node --files ${shell.pwd()}/src/cmd.ts deploy -i 1 -c ZkJumpERC20  -g ${gasFeeManageAddrss} -t ${
-      item.address
-    } `
-  })
-  // console.log('commandStr==>', commandStr)
-  if (shell.exec(commandStr).code === 0) {
-    console.log('Successful')
-  } else {
-    console.log('fail')
-  }
+  // let commandStr = ``
+  // // shell.exec('cd ../')
+  // // console.log(shell.pwd())
+  // tokens.forEach((item, index) => {
+  //   if (!index) {
+  //     commandStr += ''
+  //   } else {
+  //     commandStr += ' && '
+  //   }
+  //   commandStr += `npx ts-node --files ${shell.pwd()}/src/cmd.ts deploy -i ${
+  //     envInstance.chainId
+  //   } -c ZkJumpERC20  -g ${gasFeeManageAddrss} -t ${item.address} `
+  // })
+  // // console.log('commandStr==>', commandStr)
+  // if (shell.exec(commandStr).code === 0) {
+  //   console.log('Successful')
+  // } else {
+  //   console.log('fail')
+  // }
   // shell.exec(commandStr, function (code, stdout, stderr) {
   //   console.log('Exit code:', code)
   //   console.log('Program output:', stdout)

@@ -43,6 +43,7 @@ async function init(envName: string) {
   /** Integration of supportChains data */
   supportChains = handleSupportChainsData({ staticChainInfo, supportChains, supportTokens })
   /** Creating an env file */
+  console.log(supportChains.map((item) => item.chainId).join(' '))
   createSupportChainsFile(supportChains)
   console.log('Successful initialization.')
 }

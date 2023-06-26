@@ -1,0 +1,50 @@
+{
+  "1": {
+    "MATIC": { "pridgeAddress": "0xCc78CB0E14E0f7A5D7e99aF026fDfe33777762cb", "symbol": "MATIC" },
+    "USDC": {
+      "pridgeAddress": "0xC4a141f67Dbb49f515C980978393798Bb98495B8",
+      "id": 18,
+      "symbol": "USDC",
+      "chainId": 1,
+      "address": "0xa581b8e2b305d3a8a1ef2442159e4d46bc9fcc50",
+      "decimals": 18,
+      "fastWithdraw": true
+    }
+  },
+  "2": {
+    "AVAX": { "pridgeAddress": "0x0b3Db98C297597e249dE34007453C4886037C6A4", "symbol": "AVAX" },
+    "USDC": {
+      "pridgeAddress": "0xE407018b4968917Fb318636C60D14B9879091Da0",
+      "id": 18,
+      "symbol": "USDC",
+      "chainId": 2,
+      "address": "0x2645b73c58702ab81904a6cabdf63340b4ce29d3",
+      "decimals": 18,
+      "fastWithdraw": true
+    }
+  },
+  "4": {
+    "ETH": { "pridgeAddress": "0x4278625E4Aa95741c5044971B640E5D73DE29E71", "symbol": "ETH" },
+    "USDC": {
+      "pridgeAddress": "0x1997B446d1BC7AF700ee409C58d205D7870643Cd",
+      "id": 18,
+      "symbol": "USDC",
+      "chainId": 4,
+      "address": "0x0a7b3979ed234bb2753703fbb89633bb649db17f",
+      "decimals": 18,
+      "fastWithdraw": true
+    }
+  },
+  "9": {
+    "AGOR": { "pridgeAddress": "0x4278625E4Aa95741c5044971B640E5D73DE29E71", "symbol": "AGOR" },
+    "USDC": {
+      "pridgeAddress": "0x1997B446d1BC7AF700ee409C58d205D7870643Cd",
+      "id": 18,
+      "symbol": "USDC",
+      "chainId": 9,
+      "address": "0x27cbbe82447a0c188ebd7bc5fd706d140c7b0642",
+      "decimals": 18,
+      "fastWithdraw": true
+    }
+  }
+}
