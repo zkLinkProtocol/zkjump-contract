@@ -5,22 +5,35 @@ import { writeFileSync } from "node:fs";
 import { dirname, join } from "path";
 import { format } from "prettier";
 import AsciiTable from "ascii-table";
-import hre from "hardhat";
-import type * as ethers from "ethers";
 
-import __env from "../etc/env";
-const env: Record<string, any> = {};
-__env.forEach((item) => {
-    env[item.chainId.toString()] = item;
-});
+import env from "../etc/env";
+{
+    const args = process.argv.slice(2);
+    const deployIndex = args.indexOf("deploy");
+    const iIndex = Math.max(args.indexOf("-i"), args.indexOf("--network-id"));
+    if (deployIndex !== -1 && iIndex !== -1) {
+        const networkId: string = args[iIndex + 1];
+        if (!env[networkId]) {
+            throw new Error("unknow networkID");
+        } else {
+            process.env["HARDHAT_NETWORK"] = networkId;
+        }
+    }
+}
+// !! The import of Hardhat must occur after the HARDHAT_NETWORK setting is configured.
+import hre from "hardhat";
+import {
+    Provider as ZksyncProvider,
+    Wallet as ZksyncWallet,
+} from "zksync-web3";
+import { Deployer as ZksyncDeployer } from "@matterlabs/hardhat-zksync-deploy";
 
 const program = new Command();
 program.version("0.0.1");
-
 let networkIdOption = new Option(
     "-i, --network-id <networkId>",
     "Network ID"
-).choices(["1", "2", "..."]);
+).choices(Object.keys(env));
 networkIdOption.mandatory = true;
 
 let envNameOption = new Option("-e, --env-name <envName>", "Env Name").choices([
@@ -35,10 +48,13 @@ let contractNameOption = new Option(
     "Contract Name"
 ).choices(["ZkJumpETH", "ZkJumpERC20"]);
 contractNameOption.mandatory = true;
-let tokenContractAddressOption = new Option(
-    "-t, --token-contract-address <tokenContractAddress>",
-    "ERC20 Token Contract Address"
-);
+
+let compileOption = new Option(
+    "-p, --compile <Compile>",
+    "Whether to compile the smart contract, compile by default."
+).choices(["true", "false"]);
+compileOption.default(true);
+compileOption.argParser((v) => v === "true");
 
 let ENV_INFO_URL = {
     devnet: "https://dev-gw-v1.zk.link",
@@ -55,75 +71,118 @@ program
     .command("deploy")
     .addOption(networkIdOption)
     .addOption(contractNameOption)
-    .addOption(tokenContractAddressOption)
+    .addOption(
+        new Option(
+            "-t, --token-contract-address <tokenContractAddress>",
+            "ERC20 Token Contract Address"
+        )
+    )
     .addOption(
         new Option("-g, --gas-token <gasToken>", "Gas Fee Manage Contract")
     )
+    .addOption(compileOption)
     .action(async (options) => {
-        await hre.run("compile");
-        let provider = new hre.ethers.JsonRpcProvider(
-            hre.config.networks[options.networkId]["url"]
-        );
-        const wallet = new hre.ethers.Wallet(
-            hre.config.networks[options.networkId].accounts[0],
-            provider
-        );
-        const signer = wallet.connect(provider);
+        !!options.compile && (await hre.run("compile"));
 
         if (options.contractName == "ZkJumpETH") {
-            await deployZkJumpETH(options.networkId, signer);
+            await deployZkJumpETH(options.networkId);
         } else if (options.contractName == "ZkJumpERC20") {
             await deployZkJumpERC20(
                 options.networkId,
                 options.gasToken,
-                options.tokenContractAddress,
-                signer
+                options.tokenContractAddress
             );
         }
     });
 program.parse();
 
-async function deployZkJumpETH(networkId: string, signer: ethers.Signer) {
+async function deployZkSync(
+    contractName: string,
+    params: any[],
+    networkId: string
+): Promise<string> {
+    const zksyncProvider = new ZksyncProvider(
+        hre.config.networks[networkId]["url"]
+    );
+    const zksyncWallet = new ZksyncWallet(
+        hre.config.networks[networkId].accounts[0],
+        zksyncProvider
+    );
+    hre.artifacts.readArtifact;
+    const deployer = new ZksyncDeployer(hre, zksyncWallet);
+    const artifact = await deployer.loadArtifact(contractName);
+
+    const deploy = await deployer.deploy(artifact, params);
+    await deploy.deployed();
+    return deploy.address;
+}
+async function deployEvm(
+    contractName: string,
+    params: any[],
+    networkId: string
+): Promise<string> {
+    let provider = new hre.ethers.providers.JsonRpcProvider(
+        hre.config.networks[networkId]["url"]
+    );
+
+    const wallet = new hre.ethers.Wallet(
+        hre.config.networks[networkId].accounts[0],
+        provider
+    );
+
+    const signer = wallet.connect(provider);
+
+    const deploy = await hre.ethers.deployContract(
+        contractName,
+        params,
+        signer
+    );
+    return (await deploy.deployed()).address;
+}
+async function deployZkJumpETH(networkId: string) {
     let envInstance = env[networkId];
     if (envInstance == undefined) {
         throw new Error("networkId is not exist");
     }
-
-    const ZkJumpETH = await hre.ethers.deployContract(
+    const deploy = hre.config.networks[networkId]["zksync"]
+        ? deployZkSync
+        : deployEvm;
+    let ZkJumpETHAddress = await deploy(
         "ZkJumpETH",
         [envInstance.mainContract],
-        signer
+        networkId
     );
-
-    await ZkJumpETH.waitForDeployment();
-    let gasFeeManageAddrss = await ZkJumpETH.getAddress();
     var table = new AsciiTable();
     table.setHeading("Contract Name", "Contract Address", "ChainID");
-    table.addRow("ZkJumpETH", gasFeeManageAddrss, envInstance.layerOneChainId);
+    table.addRow("ZkJumpETH", ZkJumpETHAddress, envInstance.layerOneChainId);
     console.log(table.toString());
 }
 
 async function deployZkJumpERC20(
     networkId: string,
     gasToken: string,
-    tokenContractAddress: string,
-    signer: ethers.Signer
+    tokenContractAddress: string
 ) {
     let envInstance = env[networkId];
     if (envInstance === undefined) {
         throw new Error("networkId is not exist");
     }
-    const ZkJumpERC20 = await hre.ethers.deployContract(
+    const deploy = hre.config.networks[networkId]["zksync"]
+        ? deployZkSync
+        : deployEvm;
+    const ZkJumpERC20Address = await deploy(
         "ZkJumpERC20",
         [tokenContractAddress, gasToken, envInstance.mainContract],
-        signer
+        networkId
     );
-    await ZkJumpERC20.waitForDeployment();
-    let erc20TokenJump = await ZkJumpERC20.getAddress();
 
     var table = new AsciiTable();
     table.setHeading("Contract Name", "Contract Address", "ChainID");
-    table.addRow("ZkJumpERC20", erc20TokenJump, envInstance.layerOneChainId);
+    table.addRow(
+        "ZkJumpERC20",
+        ZkJumpERC20Address,
+        envInstance.layerOneChainId
+    );
     console.log(table.toString());
 }
 
@@ -151,9 +210,13 @@ async function init(envName: string) {
     );
 
     let result = await client.request("getSupportChains", []);
+    const env: Record<string, any> = {};
+    result.forEach((item) => {
+        env[item.chainId.toString()] = item;
+    });
     writeFileSync(
         join(dirname(__dirname), "etc/env.ts"),
-        format("export default " + JSON.stringify(result), {
+        format("export default " + JSON.stringify(env), {
             semi: false,
             parser: "babel",
         }),

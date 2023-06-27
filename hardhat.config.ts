@@ -2,7 +2,8 @@ import "@nomicfoundation/hardhat-toolbox";
 
 import { HardhatUserConfig } from "hardhat/config";
 import env from "./etc/env";
-
+import "@matterlabs/hardhat-zksync-solc";
+import accounts from "./etc/.secret";
 const config: HardhatUserConfig = {
     solidity: {
         compilers: [
@@ -32,25 +33,30 @@ const config: HardhatUserConfig = {
             allowUnlimitedContractSize: true,
         },
     },
+    zksolc: {
+        version: "latest",
+        compilerSource: "binary",
+        settings: {
+            libraries: {}, // optional. References to non-inlinable libraries
+            isSystem: false, // optional.  Enables Yul instructions available only for zkSync system contracts and libraries
+            forceEvmla: false, // optional. Falls back to EVM legacy assembly if there is a bug with Yul
+            optimizer: {
+                enabled: true, // optional. True by default
+                mode: "3", // optional. 3 by default, z to optimize bytecode size
+            },
+        },
+    },
 };
-env.forEach((network) => {
+Object.values(env).map((network) => {
     config.networks[network.chainId.toString()] = {
         url: network.web3Url,
-        accounts: [
-            "0x354bd1e4d7f7cf3751e8bca54df987646e017695c5ba33897c34026450cb91bd", //0xc7D9CD7cC37671526a4F1cD46280F7110db86D7e
-        ],
+        accounts,
+        zksync: false,
     };
+    // This is the only place that depends on the literal input "5"
+    if (network.chainId.toString() == "5") {
+        config.networks["5"]["ethNetwork"] = "goerli";
+        config.networks["5"]["zksync"] = true;
+    }
 });
 export default config;
-
-// // import these packages if network is zksync
-// if (netConfig.network.zksync !== undefined && netConfig.network.zksync) {
-//   require("@matterlabs/hardhat-zksync-solc");
-//   require("@matterlabs/hardhat-zksync-verify");
-
-//   hardhatUserConfig.zksolc = {
-//     version: "1.3.8",
-//     compilerSource: "binary",
-//     settings: {}
-//   };
-// }
