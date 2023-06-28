@@ -10,7 +10,7 @@ import "zklink-contracts-interface/contracts/IZkLink.sol";
 import "./Events.sol";
 import "./Config.sol";
 
-/// @title zkJump contract
+/// @title zkJump and Broker contract
 /// @author zkJump.io
 abstract contract AbstractZkJump is
     AccessControlDefaultAdminRules,
