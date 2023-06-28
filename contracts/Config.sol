@@ -3,5 +3,5 @@
 pragma solidity ^0.8.0;
 
 contract Config {
-    bytes32 public constant BROKER_ROLE = keccak256("BROKER");
+    bytes32 public constant BRIDGE_BROKER_ROLE = keccak256("BRIDGE_BROKER");
 }

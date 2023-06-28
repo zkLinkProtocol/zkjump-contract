@@ -40,12 +40,12 @@ abstract contract AbstractZkJump is
      * @param account The address of the account to grant the broker role.
      */
     function grantBroker(address account) external {
-        grantRole(BROKER_ROLE, account);
+        grantRole(BRIDGE_BROKER_ROLE, account);
     }
 
     function changeDelay(
         uint48 newDelay
-    ) public onlyRole(getRoleAdmin(BROKER_ROLE)) {
+    ) public onlyRole(getRoleAdmin(BRIDGE_BROKER_ROLE)) {
         brokerWithdrawDelay = uint48(Math.max(newDelay, 1 days));
     }
 
@@ -105,7 +105,7 @@ abstract contract AbstractZkJump is
         bytes memory signature
     ) external payable virtual;
 
-    function onlyBroker(
+    function onlyBridgeBroker(
         uint104 maxAmount,
         uint104 fee,
         bool isEthFee,
@@ -128,7 +128,7 @@ abstract contract AbstractZkJump is
         );
 
         address brokerAddress = ECDSA.recover(digest, signature);
-        _checkRole(BROKER_ROLE, brokerAddress);
+        _checkRole(BRIDGE_BROKER_ROLE, brokerAddress);
         return brokerAddress;
     }
 }

@@ -50,7 +50,7 @@ contract ZkJumpETH is ReentrancyGuard, AbstractZkJump, IZkJumpETH {
         require(amount <= maxAmount, "Amount exceeds the maximum allowed");
         require(amount > fee, "Amount is too small to cover the fee");
 
-        address brokerAddress = onlyBroker(
+        address brokerAddress = onlyBridgeBroker(
             maxAmount,
             fee,
             isEthFee,

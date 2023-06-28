@@ -69,7 +69,7 @@ contract ZkJumpERC20 is ReentrancyGuard, AbstractZkJump {
             subAccountId,
             ismapping
         );
-        address brokerAddress = onlyBroker(
+        address brokerAddress = onlyBridgeBroker(
             maxAmount,
             fee,
             isEthFee,
