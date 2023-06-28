@@ -43,7 +43,6 @@
     "scripts": {
         "compile": "npx hardhat compile",
         "test": "npx hardhat test",
-        "cmd": "npx ts-node --files src/cmd.ts",
-        "cmd_zksync": "HARDHAT_NETWORK=5 npx ts-node --files src/cmd.ts"
+        "cmd": "npx ts-node --files src/cmd.ts"
     }
 }
