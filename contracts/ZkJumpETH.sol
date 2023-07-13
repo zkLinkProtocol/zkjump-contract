@@ -23,6 +23,13 @@ contract ZkJumpETH is ReentrancyGuard, AbstractZkJump, IZkJumpETH {
         zkLinkInstance = _zkLinkInstance;
     }
 
+    //only TESTNET
+    function updateZkLinkInstance(
+        IZkLink _zkLinkInstance
+    ) external nonReentrant onlyRole(getRoleAdmin(BRIDGE_BROKER_ROLE)) {
+        zkLinkInstance = _zkLinkInstance;
+    }
+
     function receiveFee(address brokerAddress) external payable override {
         _mint(brokerAddress, msg.value);
     }

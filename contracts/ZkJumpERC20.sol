@@ -34,6 +34,13 @@ contract ZkJumpERC20 is ReentrancyGuard, AbstractZkJump {
         zkLinkInstance = _zkLinkInstance;
     }
 
+    //only TESTNET
+    function updateZkLinkInstance(
+        IZkLink _zkLinkInstance
+    ) external nonReentrant onlyRole(getRoleAdmin(BRIDGE_BROKER_ROLE)) {
+        zkLinkInstance = _zkLinkInstance;
+    }
+
     function bridge(
         uint104 amount,
         bytes32 userAddress,
