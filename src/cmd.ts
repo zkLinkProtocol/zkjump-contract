@@ -58,6 +58,7 @@ compileOption.argParser((v) => v === "true");
 
 let ENV_INFO_URL = {
     devnet: "https://dev-gw-v1.zk.link",
+    mainnet: ""
 };
 program
     .command("init")
@@ -93,6 +94,16 @@ program
                 options.tokenContractAddress
             );
         }
+    });
+
+program
+    .command("deploy_multicall")
+    .addOption(networkIdOption)
+    .addOption(compileOption)
+    .action(async (options) => {
+        !!options.compile && (await hre.run("compile"));
+
+        await deployMulticall(options.networkId);
     });
 program.parse();
 
@@ -183,6 +194,25 @@ async function deployZkJumpERC20(
         ZkJumpERC20Address,
         envInstance.layerOneChainId
     );
+    console.log(table.toString());
+}
+
+async function deployMulticall(networkId: string) {
+    let envInstance = env[networkId];
+    if (envInstance == undefined) {
+        throw new Error("networkId is not exist");
+    }
+    const deploy = hre.config.networks[networkId]["zksync"]
+        ? deployZkSync
+        : deployEvm;
+    let MulticallAddress = await deploy(
+        "Multicall",
+        [],
+        networkId
+    );
+    var table = new AsciiTable();
+    table.setHeading("Contract Name", "Contract Address", "ChainID");
+    table.addRow("Multicall", MulticallAddress, envInstance.layerOneChainId);
     console.log(table.toString());
 }
 
