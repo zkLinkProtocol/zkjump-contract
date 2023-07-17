@@ -9,7 +9,7 @@ import AsciiTable from "ascii-table";
 import env from "../etc/env";
 {
     const args = process.argv.slice(2);
-    const deployIndex = args.indexOf("deploy");
+    const deployIndex = Math.max(args.indexOf("deploy"), args.indexOf("deploy_multicall"));
     const iIndex = Math.max(args.indexOf("-i"), args.indexOf("--network-id"));
     if (deployIndex !== -1 && iIndex !== -1) {
         const networkId: string = args[iIndex + 1];
