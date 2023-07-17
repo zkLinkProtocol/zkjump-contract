@@ -142,13 +142,12 @@ async function deployEvm(
     );
 
     const signer = wallet.connect(provider);
-
-    const deploy = await hre.ethers.deployContract(
-        contractName,
-        params,
-        signer
-    );
-    return (await deploy.deployed()).address;
+    const contract = await hre.ethers.getContractFactory(contractName, signer);
+    const overrides =  hre.config.networks[networkId]["overrides"];
+    if (overrides != undefined) {
+        params.push(overrides);
+    }
+    return (await contract.deploy(...params)).address;
 }
 async function deployZkJumpETH(networkId: string) {
     let envInstance = env[networkId];

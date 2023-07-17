@@ -58,5 +58,11 @@ Object.values(env).map((network) => {
         config.networks["5"]["ethNetwork"] = "goerli";
         config.networks["5"]["zksync"] = true;
     }
+    if ([59144, 42161, 137, 80001].includes(Number(network.layerOneChainId))) {
+        config.networks[network.chainId.toString()]["overrides"] = {
+            type: 0,
+            gasPrice: 5000000000
+        }
+    }
 });
 export default config;
