@@ -206,7 +206,7 @@ async function deployMulticall(networkId: string) {
         : deployEvm;
     let MulticallAddress = await deploy(
         "Multicall",
-        [],
+        [envInstance.mainContract],
         networkId
     );
     var table = new AsciiTable();

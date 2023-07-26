@@ -77,7 +77,7 @@ contract ZkJumpETH is ReentrancyGuard, AbstractZkJump, IZkJumpETH {
     }
 
     function _transferToken(address to, uint256 amount) internal override {
-        (bool sent, bytes memory _data) = to.call{value: amount}("");
+        (bool sent, ) = to.call{value: amount}("");
         require(sent, "Failed to send Ether");
     }
 
