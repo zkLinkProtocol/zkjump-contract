@@ -49,7 +49,7 @@ abstract contract AbstractZkJump is
         brokerWithdrawDelay = uint48(Math.max(newDelay, 1 days));
     }
 
-    function harvest(uint256 amount) public {
+    function harvest(uint256 amount) public onlyRole(BRIDGE_BROKER_ROLE) {
         if (amount == 0) {
             amount = balanceOf(_msgSender());
         }
