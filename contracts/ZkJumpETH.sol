@@ -66,6 +66,8 @@ contract ZkJumpETH is ReentrancyGuard, AbstractZkJump, IZkJumpETH {
             subAccountId
         );
 
+        _mint(brokerAddress, fee);
+
         emit BridgeEvent(
             brokerAddress,
             userAddress,

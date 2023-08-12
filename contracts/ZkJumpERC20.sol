@@ -15,9 +15,9 @@ import "./IZkJumpETH.sol";
 /// @title zkJump contract
 /// @author zkJump.io
 contract ZkJumpERC20 is ReentrancyGuard, AbstractZkJump {
-    IERC20Metadata bridgeToken;
-    IZkJumpETH ethFeeManage;
-    IZkLink zkLinkInstance;
+    IERC20Metadata public bridgeToken;
+    IZkJumpETH public ethFeeManage;
+    IZkLink public zkLinkInstance;
 
     constructor(
         IERC20Metadata _bridgeToken,
